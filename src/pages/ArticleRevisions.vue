@@ -2,44 +2,49 @@
     <div>
         <div
             class="container"
+            v-if="isAuthorized && user?.username === article.author?.username"
         >
         <!-- article.revisions TABLE -->
-        <div class="revisions-wrapper">
-            <table class="revisions-table">
-                <thead>
-                    <tr>
-                        <th class="revisions-th">Revision #</th>
-                        <th class="revisions-th">Title</th>
-                        <th class="revisions-th">Description</th>
-                        <th class="revisions-th">Body</th>
-                        <th class="revisions-th">User ID</th>
-                        <th class="revisions-th">Created At</th>
-                        <th class="revisions-th">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="rev in article.revisions" :key="rev.id">
-                        <td class="revisions-td">{{ rev.revision_number }}</td>
-                        <td class="revisions-td">{{ rev.title }}</td>
-                        <td class="revisions-td">{{ rev.description }}</td>
-                        <td class="revisions-td">{{ rev.body }}</td>
-                        <td class="revisions-td">{{ rev.author.username }}</td>
-                        <td class="revisions-td">{{ new Date(rev.createdAt).toLocaleString() }}</td>
-                        <td class="revisions-td">
-                            <form @submit.prevent="onSubmit(rev)">
-                                <button type="submit" class="btn btn-primary btn-sm"> Revert</button>
-                            </form>
-                        </td>
+            <div class="revisions-wrapper">
+                <table class="revisions-table">
+                    <thead>
+                        <tr>
+                            <th class="revisions-th">Revision #</th>
+                            <th class="revisions-th">Title</th>
+                            <th class="revisions-th">Description</th>
+                            <th class="revisions-th">Body</th>
+                            <th class="revisions-th">User ID</th>
+                            <th class="revisions-th">Created At</th>
+                            <th class="revisions-th">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="rev in article.revisions" :key="rev.id">
+                            <td class="revisions-td">{{ rev.revision_number }}</td>
+                            <td class="revisions-td">{{ rev.title }}</td>
+                            <td class="revisions-td">{{ rev.description }}</td>
+                            <td class="revisions-td">{{ rev.body }}</td>
+                            <td class="revisions-td">{{ rev.author.username }}</td>
+                            <td class="revisions-td">{{ new Date(rev.createdAt).toLocaleString() }}</td>
+                            <td class="revisions-td">
+                                <form @submit.prevent="onSubmit(rev)">
+                                    <button type="submit" class="btn btn-primary btn-sm"> Revert</button>
+                                </form>
+                            </td>
 
-                    </tr>
-                    <tr v-if="!article.revisions.revisions?.length">
-                        <td class="no-revisions" colspan="6">No revisions found</td>
-                    </tr>
-                </tbody>
-            </table>
+                        </tr>
+                        <tr v-if="!article.revisions?.length">
+                            <td class="no-revisions" colspan="6">No revisions found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+        <div
+        v-else
+        class="container">
+        Unauthorized
         </div>
-
     </div>
 
 </template>
@@ -49,6 +54,10 @@ import Swal from "sweetalert2";
 import { computed, onMounted, reactive } from "vue";
 import { useRoute, useRouter } from 'vue-router'
 import { api } from "src/services";
+import { storeToRefs } from 'pinia'
+import { useUserStore } from 'src/store/user'
+
+const { user, isAuthorized } = storeToRefs(useUserStore())
 
 const router = useRouter()
 
@@ -68,6 +77,8 @@ interface ArticleRevision {
 interface ArticleState {
     title: string;
     body: string;
+    slug: string;
+    author: string[];
     revisions: ArticleRevision[];
 }
 
@@ -76,15 +87,23 @@ const slug = computed<string>(() => route.params.slug as string);
 
 const article: ArticleState = reactive({
     title: "",
+    slug: "",
     body: "",
+    author: [],
     revisions: [],
 });
 
 async function fetchArticleRevisions(slug: string) {
     const tt: any = await api.articles
+        .getArticle(slug)
+        .then((res) => res.data.article);
+    article.slug = tt.slug;
+    article.author = tt.author;
+    article.title = tt.title;
+    const revisions: any = await api.articles
         .getArticleRevisions(slug)
         .then((res) => res.data.revisions);
-    article.revisions = (tt) as ArticleRevision[];
+    article.revisions = (revisions) as ArticleRevision[];
 }
 
 async function onSubmit(rev) {
