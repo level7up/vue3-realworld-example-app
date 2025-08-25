@@ -10,6 +10,7 @@ export type AppRouteNames =
   | 'article'
   | 'create-article'
   | 'edit-article'
+  | 'article-visions'
   | 'login'
   | 'register'
   | 'profile'
@@ -41,6 +42,11 @@ export const routes: RouteRecordRaw[] = [
     name: 'edit-article',
     path: '/article/:slug/edit',
     component: () => import('./pages/EditArticle.vue'),
+  },
+  {
+    name: 'article-visions',
+    path: '/article/:slug/visions',
+    component: () => import('./pages/ArticleRevisions.vue'),
   },
   {
     name: 'create-article',

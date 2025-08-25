@@ -51,6 +51,15 @@
     >
       <i class="ion-edit space" /> Edit Article
     </AppLink>
+    <AppLink
+      v-if="displayVisionsButton"
+      aria-label="Article Visions"
+      class="btn btn-outline-secondary btn-sm space"
+      name="article-visions"
+      :params="{ slug: article.slug }"
+    >
+      <i class="ion-edit space" />Article Visions
+    </AppLink>
 
     <button
       v-if="displayEditButton"
@@ -86,6 +95,7 @@ const emit = defineEmits<Emits>()
 const { article } = toRefs(props)
 const { user, isAuthorized } = storeToRefs(useUserStore())
 const displayEditButton = computed(() => isAuthorized.value && user.value?.username === article.value.author.username)
+const displayVisionsButton = computed(() => isAuthorized.value && user.value?.username === article.value.author.username)
 const displayFollowButton = computed(() => isAuthorized.value && user.value?.username !== article.value.author.username)
 
 const { favoriteProcessGoing, favoriteArticle } = useFavoriteArticle({

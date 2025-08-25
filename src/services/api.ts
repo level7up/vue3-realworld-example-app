@@ -51,6 +51,7 @@ export interface Article {
   description: string;
   body: string;
   tagList: string[];
+  revisions: string[];
   /** @format date-time */
   createdAt: string;
   /** @format date-time */
@@ -58,6 +59,7 @@ export interface Article {
   favorited: boolean;
   favoritesCount: number;
   author: Profile;
+
 }
 
 export interface NewArticle {
@@ -611,6 +613,26 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "GET",
         ...params,
       }),
+    /**
+     * @description Get an article revisions. Auth required
+     *
+     * @tags Article Revisions
+     * @name GetArticleRevisions
+     * @summary Get an article revisions
+     * @request GET:/articles/{slug}/revisions
+     */
+    getArticleRevisions: (slug: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          article: Article;
+        },
+        GenericErrorModel
+      >({
+        path: `/articles/${slug}/revisions`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
 
     /**
      * @description Update an article. Auth is required
@@ -640,6 +662,31 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         secure: true,
         ...params,
       }),
+       /**
+     * @description revert an article revision. Auth is required
+     *
+     * @tags Articles
+     * @name RevertArticle
+     * @summary Revert an article
+     * @request POST:/articles/{slug}/revisions/{articleRevision}/revert
+     * @secure
+     */
+    revertArticle: (
+        slug: string,
+        articleRevision: string,
+        params: RequestParams = {},
+      ) =>
+        this.request<
+          {
+            article: Article;
+          },
+          GenericErrorModel
+        >({
+          path: `/articles/${slug}/revisions/${articleRevision}/revert`,
+          method: "POST",
+          secure: true,
+          ...params,
+        }),
 
     /**
      * @description Delete an article. Auth is required
@@ -694,6 +741,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
+
       this.request<
         {
           comment: Comment;
